@@ -11,15 +11,16 @@ Fixed some bugs, now the code runs on command line.
 """
 
 import math, codecs
+from collections import defaultdict
 import util
+import pandas as pd
 
-output_path = "./MT-results/original/"
+output_path = "./MT-results/modified/"
 output_file_name = "MT3-output.txt"
 errors_file_name = "MT3-errors.txt"
 
 try:
     import scipy.stats
-
     norm_logsf = scipy.stats.norm.logsf
 except ImportError:
     from minimath import norm_cdf, norm_logsf
@@ -34,7 +35,6 @@ BEAD_COSTS = {
     (1, 0): 450,
     (2, 2): 440,
 }
-
 
 def length_cost(sx, sy, mean_xy, variance_xy):
     """
@@ -54,7 +54,6 @@ def length_cost(sx, sy, mean_xy, variance_xy):
     except ZeroDivisionError:
         return float("-inf")
     return -100 * (LOG2 + norm_logsf(abs(delta)))
-
 
 def _align(x, y, mean_xy, variance_xy, bead_costs):
     """
@@ -90,11 +89,9 @@ def _align(x, y, mean_xy, variance_xy, bead_costs):
         i -= di
         j -= dj
 
-
 def sent_length(sentence):
     """Returns sentence length without spaces."""
     return sum(1 for c in sentence if c != " ")
-
 
 def align(sx, sy, mean_xy, variance_xy, bc):
     """Main alignment function."""
@@ -102,7 +99,6 @@ def align(sx, sy, mean_xy, variance_xy, bc):
     cy = list(map(sent_length, sy))
     for (i1, i2), (j1, j2) in reversed(list(_align(cx, cy, mean_xy, variance_xy, bc))):
         yield " ".join(sx[i1:i2]), " ".join(sy[j1:j2])
-
 
 def readFile(filename):
     """Yields sections off textfiles delimited by '#'."""
@@ -119,13 +115,23 @@ def readFile(filename):
     if paragraph != [] and doc != "":
         yield paragraph, doc
 
+def read_parallel_corpus(file_x, file_y):
+    """Yields parallel paragraphs from two files."""
+    paragraphs_x = list(readFile(file_x))
+    paragraphs_y = list(readFile(file_y))
+    
+    min_len = min(len(paragraphs_x), len(paragraphs_y))
+    
+    for i in range(min_len):
+        src_paragraph, _ = paragraphs_x[i]
+        trg_paragraph, _ = paragraphs_y[i]
+        yield "".join(src_paragraph), "".join(trg_paragraph)
 
 def calculateMean(srcfile, trgfile):
-    """Caluclate mean length: mean = len(trgfile) / len(srcfile)."""
+    """Calculate mean length: mean = len(trgfile) / len(srcfile)."""
     srcfile = codecs.open(srcfile, "r", "utf8").read().replace(" ", "")
     trgfile = codecs.open(trgfile, "r", "utf8").read().replace(" ", "")
     return len(trgfile) / float(len(srcfile))
-
 
 def calculateVariance(srcfile, trgfile):
     """Calculates covariance between len(srcfile) and len(trgfile)."""
@@ -133,7 +139,6 @@ def calculateVariance(srcfile, trgfile):
         from pylab import polyfit
     except ImportError:
         import os
-
         os.system("sudo pip install -U --force-reinstall scipy")
     diffsquares = [
         math.pow(
@@ -147,13 +152,53 @@ def calculateVariance(srcfile, trgfile):
     (m, _) = polyfit(src_paragraph_len, diffsquares, 1)
     return m
 
+def classify_alignments(golden_file):
+    """Classify and count alignment types using the golden file in xlsx format"""
+    alignment_counts = defaultdict(int)
 
-def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
+    # Read the Excel file
+    df = pd.read_excel(golden_file, header=None)
+
+    # Assuming the Excel file has two columns: 'Source' and 'Target'
+    for src, trg in zip(df[0], df[2]):
+
+        len_x = len(src.replace(" ", ""))
+        len_y = len(trg.replace(" ", ""))
+
+        if len_x > 0 and len_y > 0:
+            if len_x == len_y:
+                alignment_counts[(1, 1)] += 1
+            elif len_x > len_y:
+                alignment_counts[(2, 1)] += 1
+            else:
+                alignment_counts[(1, 2)] += 1
+        elif len_x == 0:
+            alignment_counts[(0, 1)] += 1
+        elif len_y == 0:
+            alignment_counts[(1, 0)] += 1
+
+    return alignment_counts
+
+def estimate_costs(alignment_counts):
+    """Estimate costs from alignment counts"""
+    total_alignments = sum(alignment_counts.values())
+    bead_costs = {}
+    for (di, dj), count in alignment_counts.items():
+        probability = count / total_alignments
+        z_score = -math.log(probability)
+        cost = int(z_score * 100)
+        bead_costs[(di, dj)] = cost
+    return bead_costs
+
+def main(corpusx, corpusy, golden, mean='gacha', variance=6.8, bc=BEAD_COSTS):
     if mean == "gacha":
         mean = calculateMean(corpusx, corpusy)
-        variance = calculateVariance(corpusx, corpusy)
     mean, variance = list(map(float, [mean, variance]))
-    
+
+    # Calculate BEAD_COSTS
+    alignment_counts = classify_alignments(golden)
+    bead_costs = estimate_costs(alignment_counts)
+
     # read len of golden
     gold = util.read_golden(golden)
     alignment = []
@@ -162,10 +207,8 @@ def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
     for src, trg in zip(readFile(corpusx), readFile(corpusy)):
         assert src[1] == trg[1]
         # print(src[1])
-        # for sentence_x, sentence_y in align(src[0], trg[0], mean, variance, bc):
-        #     print(sentence_x + "\t" + sentence_y)
         # Output to file
-        for sentence_x, sentence_y in align(src[0], trg[0], mean, variance, bc):
+        for sentence_x, sentence_y in align(src[0], trg[0], mean, variance, bead_costs):
             alignment.append((sentence_x, sentence_y))
             if (sentence_x, sentence_y) not in gold:
                 errors.append((sentence_x, sentence_y))
@@ -175,21 +218,22 @@ def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
     with open(output_path + errors_file_name, "w", encoding="utf8") as f:
         for sent_x, sent_y in errors:
             f.write(sent_x + "\t" + sent_y + "\n")
-
+                
     print("Precision: ", util.precision(alignment, gold))
     print("Recall: ", util.recall(alignment, gold))
     print("F1: ", util.f_one(alignment, gold))
     print("Alignment: ", len(alignment))
 
-
-
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) not in list(range(4, 7)):
-        sys.stderr.write(
-            "Usage: %srcfile corpus.x corpus.y gold"
-            "(mean) (variance) (bead_costs)\n" % sys.argv[0]
-        )
+    if len(sys.argv) != 5:
+        print("Usage: python gacha.py <corpus_x> <corpus_y> <golden> <mean>")
         sys.exit(1)
-    main(*sys.argv[1:])
+
+    corpusx = sys.argv[1]
+    corpusy = sys.argv[2]
+    golden = sys.argv[3]
+    mean = sys.argv[4]
+
+    main(corpusx, corpusy, golden, mean)
