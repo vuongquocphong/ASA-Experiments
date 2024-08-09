@@ -4,6 +4,26 @@ This is the experimenting implementation of the topic Automatic Sentence Alignme
 
 ## How to run
 
+### Init the environment
+
+```{bash}
+python -m venv myenv
+```
+
+### Activate the environment
+
+- Linux/MacOS
+
+```{bash}
+source myenv/bin/activate
+```
+
+- Windows
+
+```{bash}
+.\myenv\Scripts\activate
+```
+
 ### Length-based approach
 
 ```{python}
