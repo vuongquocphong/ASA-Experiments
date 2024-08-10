@@ -33,4 +33,5 @@ python -m approaches.length-based.file_name {source_file} {target_file} {gold_fi
 ### Dictionary-based approach
 
 ```{python}
+python -m approaches.dictionary-based.file_name {source_file} {target_file} {gold_file}
 ```
