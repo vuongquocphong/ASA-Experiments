@@ -1,5 +1,6 @@
 import nltk
 import pandas as pd
+import codecs
 
 def read_textfile(path):
     """
@@ -20,12 +21,52 @@ def read_golden(path):
     df[2] = df[2].str.strip()
     return list(zip(df[0], df[2]))
 
-def read_dictionary(file_path):
+def read_dictionary():
     """
     Read a dictionary of word pairs from an excel file (the first and the second columns)
     """
-    df = pd.read_excel(file_path)
-    return list(zip(df.iloc[:, 0], df.iloc[:, 1]))
+    dictionary_folder = "./data/dictionaries/"
+    dictionary = dict()
+    # Read all file in the dictionary folder
+    import os
+    files = os.listdir(dictionary_folder)
+    for file in files:
+        if file.endswith(".xlsx"):
+            df = pd.read_excel(dictionary_folder + file)
+            word_pairs = set(zip(df['Chinese'], df['Vietnamese'].str.strip().str.lower()))
+            for pair in word_pairs:
+                if pair[0] in dictionary:
+                    dictionary[pair[0]].add(pair[1])
+                else:
+                    dictionary[pair[0]] = {pair[1]}
+    return dictionary
+
+def readFile(filename):
+    """Yields sections off textfiles delimited by '#'."""
+    paragraph = []
+    doc = ""
+    for line in codecs.open(filename, "r", "utf8"):
+        if line.strip() == "#" or line[0] == "#":
+            if paragraph != [] and doc != "":
+                yield paragraph, doc
+                paragraph = []
+            doc = line.strip()  # line.strip().rpartition('/')[-1]
+        else:
+            paragraph.append(line.strip())
+    if paragraph != [] and doc != "":
+        yield paragraph, doc
+
+def read_parallel_corpus(file_x, file_y):
+    """Yields parallel paragraphs from two files."""
+    paragraphs_x = list(readFile(file_x))
+    paragraphs_y = list(readFile(file_y))
+    
+    min_len = min(len(paragraphs_x), len(paragraphs_y))
+    
+    for i in range(min_len):
+        src_paragraph, _ = paragraphs_x[i]
+        trg_paragraph, _ = paragraphs_y[i]
+        yield "".join(src_paragraph), "".join(trg_paragraph)
 
 def save_alignment(alignment, output_path):
     """

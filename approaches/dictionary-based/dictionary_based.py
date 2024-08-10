@@ -1,11 +1,135 @@
 from ..utils import util
+from nltk.tokenize import word_tokenize
+from collections import defaultdict
 import os
 
-output_path = "./results/MT-results/dictionary-based/modified/"
-output_file_name = "MT2-output.txt"
-errors_file_name = "MT2-errors.txt"
-dictionary_path = "./data/dictionaries/sample_dictionary.xlsx"
+def get_ch_content_words(ch_sentence):
+    """
+    Get content words from a Chinese sentence.
+    """
+    return [word for word in word_tokenize(ch_sentence) if word > "\u4e00" and word < "\u9fff"]
 
-# print the directory of this file
-dictionary = util.read_dictionary(dictionary_path)
-print(dictionary)
+def get_vn_content_words(vn_sentence):
+    marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'"]
+    """
+    Get content words from a Vietnamese sentence.
+    """
+    return [word.lower() for word in word_tokenize(vn_sentence) if word not in marks]
+
+from typing import List
+
+available_pair = [ (1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 2), (1, 4), (2, 1), (3, 1) ]
+
+# Scoring Bead
+def bead_score( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary):
+    source_words = set()
+    target_words = set()
+    for i in range(a - x + 1, a + 1):
+        tmp = get_ch_content_words( Chinese_sentences[i] )
+        source_words.update( tmp )
+    for i in range(b - y + 1, b + 1):
+        tmp = get_vn_content_words( Vietnamese_sentences[i] )
+        target_words.update( tmp )
+    score = 0;
+    for source_word in source_words:
+        for target_word in target_words:
+            if source_word in dictionary and target_word in dictionary[source_word]:
+                score += 1
+    return score / ( len( source_words ) + len( target_words ) )
+
+# DP function
+def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictionary) -> List[any]:
+    n = len( Chinese_sentences )
+    m = len( Vietnamese_sentences )
+
+    # Add dummy sentences to the beginning of the sentences
+    Chinese_sentences = [ None ] + Chinese_sentences
+    Vietnamese_sentences = [ None ] + Vietnamese_sentences
+
+    # Initialization
+    H = dict()
+    H[(0, 0)] = 0
+
+    backtrace = dict()
+    backtrace[(0, 0)] = (0, 0)
+
+    for i in range( 0, n + 1):
+        H[(i, 0)] = 0
+        backtrace[(i, 0)] = (0, 0)
+    
+    for j in range( 0, m + 1):
+        H[(0, j)] = 0
+        backtrace[(0, j)] = (0, 0)
+
+    # Calculate
+    for a in range( 1, n + 1 ):
+        for b in range( 1, m + 1 ):
+            max_score = 0
+            max_x, max_y = 1, 1
+            for x, y in available_pair:
+                if a - x < 0 or b - y < 0:
+                    continue
+                print(bead_score( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary ))
+                score = H[(a - x, b - y)] + bead_score( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
+                if score > max_score:
+                    max_score = score
+                    max_x, max_y = x, y
+            H[(a, b)] = max_score
+            backtrace[(a, b)] = ( a - max_x, b - max_y )
+
+    # Backtrace
+    split_position = []
+    
+    a, b = n, m
+    while a > 0 and b > 0:
+        a, b = backtrace[(a, b)]
+        split_position.append( (a, b) )
+        # print( "Splitting point: ", a, b )
+    return split_position[::-1]
+
+def main(corpus_x, corpus_y, golden):
+    # get the file name of corpus_x and corpus_y
+    corpus_x_file: str = os.path.basename(corpus_x)
+    if corpus_x_file.find('MT') != -1:
+        output_path = "./results/MT-results/lexical-matching/"
+    elif corpus_x_file.find('QTTY') != -1:
+        output_path = "./results/QTTY-results/lexical-matching/"
+    
+    output_file_name = os.path.splitext(corpus_x_file)[0] + "-output.txt"
+    errors_file_name = os.path.splitext(corpus_x_file)[0] + "-errors.txt"
+    dictionary = util.read_dictionary()
+    goldens = util.read_golden(golden)
+    alignments = []
+    for src, trg in zip(util.readFile(corpus_x), util.readFile(corpus_y)):
+        assert src[1] == trg[1]
+        split_position = BSA( src[0], trg[0], dictionary )
+        cur_src = 0
+        cur_trg = 0
+        for a, b in split_position:
+            src_sentence = " ".join( src[0][cur_src:a] )
+            trg_sentence = " ".join( trg[0][cur_trg:b] )
+            alignments.append( ( src_sentence, trg_sentence ) )
+            cur_src = a
+            cur_trg = b
+    with open(output_path + output_file_name, "w", encoding="utf8") as f:
+        for sent_x, sent_y in alignments:
+            f.write(sent_x + "\t" + sent_y + "\n")
+    with open(output_path + errors_file_name, "w", encoding="utf8") as f:
+        for sent_x, sent_y in alignments:
+            if (sent_x, sent_y) not in goldens:
+                f.write(sent_x + "\t" + sent_y + "\n")
+    print(corpus_x_file)
+    print("Dictionary length: ", len(dictionary))
+    print("Precision: ", util.precision(alignments, goldens))
+    print("Recall: ", util.recall(alignments, goldens))
+    print("F1: ", util.f_one(alignments, goldens))
+    print("Alignment: ", len(alignments))
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) != 4:
+        sys.stderr.write("Usage: %srcfile corpus.x corpus.y gold\n")
+        sys.exit(1)
+    main(sys.argv[1], sys.argv[2], sys.argv[3])
+
