@@ -26,12 +26,12 @@ source myenv/bin/activate
 
 ### Length-based approach
 
-```{python}
+```{bash}
 python -m approaches.length-based.file_name {source_file} {target_file} {gold_file} gacha
 ```
 
 ### Dictionary-based approach
 
-```{python}
+```{bash}
 python -m approaches.dictionary-based.file_name {source_file} {target_file} {gold_file}
 ```
