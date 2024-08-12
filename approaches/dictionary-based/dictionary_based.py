@@ -10,18 +10,18 @@ def get_ch_content_words(ch_sentence):
     return [word for word in word_tokenize(ch_sentence) if word > "\u4e00" and word < "\u9fff"]
 
 def get_vn_content_words(vn_sentence):
-    marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'"]
+    marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'", '“', '”', '‘', '’', '...', '…', '–', '-', '—']
     """
     Get content words from a Vietnamese sentence.
     """
-    return [word.lower() for word in word_tokenize(vn_sentence) if word not in marks]
+    return [word.lower().replace("-", " ") for word in word_tokenize(vn_sentence) if word not in marks]
 
 from typing import List
 
-available_pair = [ (1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 2), (1, 4), (2, 1), (3, 1) ]
+available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15) ]
 
 # Scoring Bead
-def bead_score( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary):
+def bead_score( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict) -> float:
     source_words = set()
     target_words = set()
     for i in range(a - x + 1, a + 1):
@@ -30,12 +30,18 @@ def bead_score( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a
     for i in range(b - y + 1, b + 1):
         tmp = get_vn_content_words( Vietnamese_sentences[i] )
         target_words.update( tmp )
+    len_x = len( source_words )
+    len_y = len( target_words )
     score = 0;
     for source_word in source_words:
-        for target_word in target_words:
-            if source_word in dictionary and target_word in dictionary[source_word]:
-                score += 1
-    return score / ( len( source_words ) + len( target_words ) )
+        definitions: List[str] = dictionary.get( source_word, None )
+        if definitions is None:
+            continue
+        for definition in definitions:
+            for target_word in target_words:
+                if definition.find( target_word ) != -1:
+                    score += 1
+    return score / ( len_x * len_y )
 
 # DP function
 def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictionary) -> List[any]:
