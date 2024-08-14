@@ -1,0 +1,19 @@
+{
+    "meas_ccy_unit":[
+        "km", "dm", "cm", "mm",
+        "kg", "ha",
+        "mol", "cd", "rad", "Hz",
+        "usd", "USD", "vnd", "VND", "yen", "YEN", "krw", "KRW",
+        "$", "£", "¥", "€", "₡", "﷼", "₩", "₴", "₫"
+    ],
+    
+    "html_entity_err":[
+        "&lt ;em&gt ;&lt ; / em&gt ;",
+        ";em&gt ",
+        "em&gt ",
+        ";i&gt ",
+        "i&gt",
+        ";&lt",
+        "&lt"
+    ]
+}

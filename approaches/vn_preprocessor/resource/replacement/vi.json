@@ -1,0 +1,42 @@
+{ 
+	"general":
+	{
+	},
+	
+	"mark":
+	{
+	},
+	
+	"abbrv":
+	{
+	},
+	
+    "type_mistake":
+    {
+		" tr . ":" tr. ",
+		"v.v .":"v.v.",
+        " vv.":" v.v. ", " v.v":" v.v. ", " v.v.":" v.v. ",
+        " ko ":" không ", " ko ":" không ", " Ko ":" Không ",
+        " ko,":" không, ", "khong":"không",
+        " fải ":" phải ", " đc ":" được ", " Đc ":" Được ",
+        " uớc ":" ước ", ".và":" và", ".vì":" vì", "cuả":"của",
+        "ghánh":"gánh", "kkhu":"khu", "nhữn ":"những ",
+        "giốn ":"giống ", "thuọc":"thuộc",
+        "đẵ ":"đã ", "đuợc":"được", "Qúa":"Quá", "qúa":"quá",
+        "đaọ":"đạo", "thưc phẩm":"thực phẩm",
+        "thực phậm":"thực phẩm",
+        "nổ lực":"nỗ lực", "đề câp":"đề cập"
+    },
+	
+	"url_email":
+	{
+	},
+    
+    "short_full_frm":
+	{
+	},
+    
+    "short_frm_mistake":
+	{
+	}
+}

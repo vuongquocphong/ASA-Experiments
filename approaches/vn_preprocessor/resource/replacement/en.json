@@ -1,0 +1,55 @@
+{   
+	"general":
+	{
+	},
+	
+	"mark":
+	{
+	},
+	
+	"abbrv":
+    {
+        "U. S.":"U.S.",
+        "on pp .":"on pp. ",
+        " A. D. ":" A.D. ",
+        " B. C.":" B.C.",
+        " A.D.":" A.D. ",
+        "Mr ":" Mr. ",
+        "Mrs ":" Mrs. ",
+        "Ph. D ":"Ph.D "
+    },
+	
+    "type_mistake":
+	{
+	},
+	
+	"url_email":
+	{
+	},
+    
+    "short_full_frm":
+    {
+        "'m":"am", "'re":"are", "n't":" not", "'ve":"have",
+        "'em":"them", "'ll":" will", "shan't":"shall not",
+        "'tis":"it is", "'twas":"it was"
+    },
+    
+    "short_frm_mistake":
+    {
+        "' d ":"'d ", "' D ":"'D ",
+        "' m ":"'m ", "' M ":"'M ",
+        "' s ":"'s ", "' S ":"'S ",
+        "n ' t ":" n't ", "N ' T ":" N'T ",
+        "' ll ":"'ll ", "' LL ":"'LL ",
+        "' ve ":"'ve ", "' VE ":"'VE ",
+        "' re ":"'re ", "' RE ":"'RE ",
+        "' tis ":"'tis ", "' TIS ":"'TIS ",
+        "' twas ":"'twas ", "' TWAS ":"'TWAS ",
+        "cannot ":"can not ", "CANNOT ":"CAN NOT ",
+        "don't ":"do n't ", "Don't ":"Do n't ", "DON'T ":"DO N'T ",
+        "doesn't ":"does n't ", "Doesn't ":"Does n't ",
+        "can't ":"ca n't ", "Can't ":"Ca n't ", "CAN'T ":"CA N'T ",
+        "won't ":"wo n't ", "Won't ":"Wo n't ", "WON'T ":"WO N'T ",
+        "' em ":"'em ", "' EM ":"'EM "
+    }
+}
