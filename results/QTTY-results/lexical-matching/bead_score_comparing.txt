@@ -1,0 +1,47 @@
+# bead_score_no_remove
+
+QTTY6_spaced_splitted.txt
+Dictionary length:  468
+Precision:  0.7301587301587301
+Recall:  0.6301369863013698
+F1:  0.6764705882352942
+Alignment:  63
+
+QTTY4_spaced_splitted.txt
+Dictionary length:  468
+Precision:  0.6501547987616099
+Recall:  0.5675675675675675
+F1:  0.606060606060606
+Alignment:  323
+
+# bead_score_remove
+
+QTTY6_spaced_splitted.txt
+Dictionary length:  468
+Precision:  0.8253968253968254
+Recall:  0.7123287671232876
+F1:  0.7647058823529411
+Alignment:  63
+
+QTTY4_spaced_splitted.txt
+Dictionary length:  468
+Precision:  0.6563467492260062
+Recall:  0.572972972972973
+F1:  0.611832611832612
+Alignment:  323
+
+# bead_score_new (maximum bipartite matching)
+
+QTTY6_spaced_splitted.txt
+Dictionary length:  468
+Precision:  0.873015873015873
+Recall:  0.7534246575342466
+F1:  0.8088235294117647
+Alignment:  63
+
+QTTY4_spaced_splitted.txt
+Dictionary length:  468
+Precision:  0.6965944272445821
+Recall:  0.6081081081081081
+F1:  0.6493506493506493
+Alignment:  323
