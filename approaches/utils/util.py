@@ -1,6 +1,7 @@
 import nltk
 import pandas as pd
 import codecs
+from ..vn_preprocessor.vietnamese import normalize_u
 
 def read_textfile(path):
     """
@@ -21,6 +22,15 @@ def read_golden(path):
     df[2] = df[2].str.strip()
     return list(zip(df[0], df[2]))
 
+def normalize_dictionary(vietnamese_column):
+    res = []
+    for row in vietnamese_column:
+        tmp = []
+        for word in row:
+            tmp.append(normalize_u(str(word), 2))
+        res.append(tmp)
+    return res
+
 def read_dictionary():
     """
     Read a dictionary of word pairs from an excel file (the first and the second columns)
@@ -39,6 +49,12 @@ def read_dictionary():
                     dictionary[pair[0]].add(pair[1])
                 else:
                     dictionary[pair[0]] = {pair[1]}
+    vn_meanning = []
+    for key in dictionary:
+        vn_meanning.append(dictionary[key])
+    vn_meanning = normalize_dictionary(vn_meanning)
+    for i, key in enumerate(dictionary):
+        dictionary[key] = vn_meanning[i]
     return dictionary
 
 marks = ["。", "；", "，", "：", "？", "！", "!", ":", "、", "?"]
