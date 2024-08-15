@@ -6,7 +6,17 @@ def get_ch_content_words(ch_sentence):
     """
     Get content words from a Chinese sentence.
     """
-    return [word for word in word_tokenize(ch_sentence) if word > "\u4e00" and word < "\u9fff"]
+    return [
+        word for word in word_tokenize(ch_sentence)
+        if any(
+            ord(word) in range(start, end + 1)
+            for start, end in [
+                (0x4e00, 0x9fff),
+                (0xf900, 0xfaff),
+                (0x20000, 0x2A6DF)
+            ]
+        )
+    ]
 
 def get_vn_content_words(vn_sentence):
     marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'", '“', '”', '‘', '’', '...', '…', '–', '-', '—']
@@ -46,10 +56,13 @@ def bead_score_new( Chinese_sentences: List[any], Vietnamese_sentences: List[any
 
     # Get content words
     for i in range(a - x + 1, a + 1):
-        source_words += get_ch_content_words( Chinese_sentences[i] )
+        source_words += Chinese_sentences[i]
 
     for i in range(b - y + 1, b + 1):
-        target_words += get_vn_content_words( Vietnamese_sentences[i] )
+        target_words += Vietnamese_sentences[i]
+
+    if len( source_words ) == 0 or len( target_words ) == 0:
+        return 0
 
     available_Chinese_words = [ word for word in source_words if word in dictionary.keys() ]
     
@@ -58,6 +71,12 @@ def bead_score_new( Chinese_sentences: List[any], Vietnamese_sentences: List[any
     Vietnamese_domains = list( set( Vietnamese_domains ) )
 
     available_Vietnamese_words = [ word for word in target_words if word in Vietnamese_domains ]
+    unavailable_Vietnamese_words = [ word for word in target_words if word not in Vietnamese_domains ]
+
+    # Add abundance words ( combine two consecutive words )
+    abundance_words = [unavailable_Vietnamese_words[i - 1] + " " + unavailable_Vietnamese_words[i] for i in range(1, len(unavailable_Vietnamese_words))]
+    abundance_words = [ word for word in abundance_words if word in Vietnamese_domains ]
+    available_Vietnamese_words += abundance_words
 
     # Create a bipartite graph
     global assigned, visited, time, adjective
