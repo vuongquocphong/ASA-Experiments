@@ -1,4 +1,4 @@
-ch_marks = ["。", "；", "：", "？", "！", "!", ":", "?"]
+ch_marks = ["。", "；", "？", "！", "!", "?"]
 
 def split_ch_sentences(input_txt):
     """
@@ -6,6 +6,8 @@ def split_ch_sentences(input_txt):
     """
     sentences = []
     for line in input_txt:
+        line = line.replace(" ", "")
+        line = ' '.join(line)
         line = line.strip()
         if line == "":
             continue

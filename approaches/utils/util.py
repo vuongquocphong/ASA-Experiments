@@ -41,6 +41,8 @@ def read_dictionary():
                     dictionary[pair[0]] = {pair[1]}
     return dictionary
 
+marks = ["。", "；", "，", "：", "？", "！", "!", ":", "、", "?"]
+
 def readFile(filename):
     """Yields sections off textfiles delimited by '#'."""
     paragraph = []
@@ -52,7 +54,12 @@ def readFile(filename):
                 paragraph = []
             doc = line.strip()  # line.strip().rpartition('/')[-1]
         else:
-            paragraph.append(line.strip())
+            tmp = str(line)
+            for mark in marks:
+                tmp.replace(mark, "")
+            if tmp != "":
+                paragraph.append(tmp.strip())
+            # paragraph.append(line.strip())
     if paragraph != [] and doc != "":
         yield paragraph, doc
 
