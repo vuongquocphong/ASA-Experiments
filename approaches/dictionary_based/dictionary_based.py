@@ -163,6 +163,12 @@ def main(corpus_x, corpus_y, golden):
     output_file_name = os.path.splitext(corpus_x_file)[0] + "-output.txt"
     errors_file_name = os.path.splitext(corpus_x_file)[0] + "-errors.txt"
     dictionary = util.read_dictionary()
+    with open('./dictionary.txt', 'w', encoding='utf-8') as f:
+        for key in dictionary:
+            f.write(str(key))
+            f.write('\t')
+            f.write(','.join(dictionary[key]))
+            f.write('\n')
     goldens = util.read_golden(golden)
     alignments = aligner(corpus_x, corpus_y)
     with open(output_path + output_file_name, "w", encoding="utf8") as f:
