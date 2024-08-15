@@ -1,13 +1,11 @@
-ch_marks = ["。", "；", "，", "：", "？", "！", "!", ":", "、", "?"]
+ch_marks = ["。", "；", "：", "？", "！", "!", ":", "?"]
 
-def split_ch_sentences(file_path):
+def split_ch_sentences(input_txt):
     """
     Split Chinese sentences from a file.
     """
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
     sentences = []
-    for line in lines:
+    for line in input_txt:
         line = line.strip()
         if line == "":
             continue
@@ -15,5 +13,3 @@ def split_ch_sentences(file_path):
             line = line.replace(mark, mark + "\n")
         sentences.extend(line.split("\n"))
     return sentences
-
-print(split_ch_sentences("./approaches/ch_preprocessor/test.txt"))

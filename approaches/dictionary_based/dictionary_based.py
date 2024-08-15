@@ -19,7 +19,7 @@ def get_vn_content_words(vn_sentence):
 
 from typing import List
 
-available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15) ]
+available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15) ]
 
 # Scoring Bead
 def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
@@ -119,18 +119,8 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
         # print( "Splitting point: ", a, b )    
     return split_position[::-1]
 
-def main(corpus_x, corpus_y, golden):
-    # get the file name of corpus_x and corpus_y
-    corpus_x_file: str = os.path.basename(corpus_x)
-    if corpus_x_file.find('MT') != -1:
-        output_path = "./results/MT-results/lexical-matching/"
-    elif corpus_x_file.find('QTTY') != -1:
-        output_path = "./results/QTTY-results/lexical-matching/"
-    
-    output_file_name = os.path.splitext(corpus_x_file)[0] + "-output.txt"
-    errors_file_name = os.path.splitext(corpus_x_file)[0] + "-errors.txt"
+def aligner(corpus_x, corpus_y):
     dictionary = util.read_dictionary()
-    goldens = util.read_golden(golden)
     alignments = []
     for src, trg in zip(util.readFile(corpus_x), util.readFile(corpus_y)):
         assert src[1] == trg[1]
@@ -146,6 +136,21 @@ def main(corpus_x, corpus_y, golden):
                 alignments.append( ( src_sentence, trg_sentence ) )
             cur_src = a
             cur_trg = b
+    return alignments
+
+def main(corpus_x, corpus_y, golden):
+    # get the file name of corpus_x and corpus_y
+    corpus_x_file: str = os.path.basename(corpus_x)
+    if corpus_x_file.find('MT') != -1:
+        output_path = "./results/MT-results/lexical-matching/"
+    elif corpus_x_file.find('QTTY') != -1:
+        output_path = "./results/QTTY-results/lexical-matching/"
+    
+    output_file_name = os.path.splitext(corpus_x_file)[0] + "-output.txt"
+    errors_file_name = os.path.splitext(corpus_x_file)[0] + "-errors.txt"
+    dictionary = util.read_dictionary()
+    goldens = util.read_golden(golden)
+    alignments = aligner(corpus_x, corpus_y)
     with open(output_path + output_file_name, "w", encoding="utf8") as f:
         for sent_x, sent_y in alignments:
             f.write(sent_x + "\t" + sent_y + "\n")
