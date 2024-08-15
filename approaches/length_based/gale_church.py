@@ -147,6 +147,13 @@ def calculateVariance(srcfile, trgfile):
     (m, _) = polyfit(src_paragraph_len, diffsquares, 1)
     return m
 
+def aligner(corpus_x, corpus_y, mean=1.0, variance=6.8, bc=BEAD_COSTS):
+    alignments = []
+    for src, trg in zip(util.readFile(corpus_x), util.readFile(corpus_y)):
+        assert src[1] == trg[1]
+        for sentence_x, sentence_y in align(src[0], trg[0], mean, variance, bc):
+            alignments.append((sentence_x, sentence_y))
+    return alignments
 
 def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
     if mean == "gacha":
@@ -156,8 +163,7 @@ def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
     
     # read len of golden
     gold = util.read_golden(golden)
-    alignment = []
-    errors = []
+    alignments = []
 
     for src, trg in zip(readFile(corpusx), readFile(corpusy)):
         assert src[1] == trg[1]
@@ -166,20 +172,19 @@ def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
         #     print(sentence_x + "\t" + sentence_y)
         # Output to file
         for sentence_x, sentence_y in align(src[0], trg[0], mean, variance, bc):
-            alignment.append((sentence_x, sentence_y))
-            if (sentence_x, sentence_y) not in gold:
-                errors.append((sentence_x, sentence_y))
+            alignments.append((sentence_x, sentence_y))
     with open(output_path + output_file_name, "w", encoding="utf8") as f:
-        for sent_x, sent_y in alignment:
+        for sent_x, sent_y in alignments:
             f.write(sent_x + "\t" + sent_y + "\n")
     with open(output_path + errors_file_name, "w", encoding="utf8") as f:
-        for sent_x, sent_y in errors:
-            f.write(sent_x + "\t" + sent_y + "\n")
+        for sent_x, sent_y in alignments:
+            if (sent_x, sent_y) not in gold:
+                f.write(sent_x + "\t" + sent_y + "\n")
 
-    print("Precision: ", util.precision(alignment, gold))
-    print("Recall: ", util.recall(alignment, gold))
-    print("F1: ", util.f_one(alignment, gold))
-    print("Alignment: ", len(alignment))
+    print("Precision: ", util.precision(alignments, gold))
+    print("Recall: ", util.recall(alignments, gold))
+    print("F1: ", util.f_one(alignments, gold))
+    print("Alignment: ", len(alignments))
 
 
 

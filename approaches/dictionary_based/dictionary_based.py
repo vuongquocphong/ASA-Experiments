@@ -8,17 +8,7 @@ def get_ch_content_words(ch_sentence):
     """
     Get content words from a Chinese sentence.
     """
-    return [
-        word for word in word_tokenize(ch_sentence)
-        if any(
-            ord(word) in range(start, end + 1)
-            for start, end in [
-                (0x4e00, 0x9fff),
-                (0xf900, 0xfaff),
-                (0x20000, 0x2A6DF)
-            ]
-        )
-    ]
+    return [word for word in word_tokenize(ch_sentence) if word > "\u4e00" and word < "\u9fff"]
 
 def get_vn_content_words(vn_sentence):
     marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'", '“', '”', '‘', '’', '...', '…', '–', '-', '—']
@@ -29,20 +19,18 @@ def get_vn_content_words(vn_sentence):
 
 from typing import List
 
-available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15),
-                   (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15),
-                   (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12), (3, 13), (3, 14), (3, 15), 
-                   (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6), (4, 7), (4, 8), (4, 9), (4, 10), (4, 11), (4, 12), (4, 13), (4, 14), (4, 15),
-                   (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7), (5, 8), (5, 9), (5, 10), (5, 11), (5, 12), (5, 13), (5, 14), (5, 15),]
+available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15) ]
 
 # Scoring Bead
 def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
     source_words = set()
     target_words = set()
     for i in range(a - x + 1, a + 1):
-        source_words.update( Chinese_sentences[i] )
+        tmp = get_ch_content_words( Chinese_sentences[i] )
+        source_words.update( tmp )
     for i in range(b - y + 1, b + 1):
-        target_words.update( Vietnamese_sentences[i] )
+        tmp = get_vn_content_words( Vietnamese_sentences[i] )
+        target_words.update( tmp )
     len_x = len( source_words )
     len_y = len( target_words )
     score = 0
@@ -57,15 +45,14 @@ def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: Li
     return score / ( len_x + len_y )
 
 def bead_score_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
-    
     source_words = set()
     target_words = set()
-
     for i in range(a - x + 1, a + 1):
-        source_words.update( Chinese_sentences[i] )
+        tmp = get_ch_content_words( Chinese_sentences[i] )
+        source_words.update( tmp )
     for i in range(b - y + 1, b + 1):
-        target_words.update( Vietnamese_sentences[i] )
-    
+        tmp = get_vn_content_words( Vietnamese_sentences[i] )
+        target_words.update( tmp )
     len_x = len( source_words )
     len_y = len( target_words )
     score = 0
@@ -85,10 +72,6 @@ def bead_score_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[
 def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictionary) -> List[any]:
     n = len( Chinese_sentences )
     m = len( Vietnamese_sentences )
-
-    # Get content words
-    Chinese_sentences = [ get_ch_content_words( Chinese_sentences[i] ) for i in range( n ) ]
-    Vietnamese_sentences = [ get_vn_content_words( Vietnamese_sentences[i] ) for i in range( m ) ]
 
     # Add dummy sentences to the beginning of the sentences
     Chinese_sentences = [ None ] + Chinese_sentences
@@ -118,13 +101,11 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
             for x, y in available_pair:
                 if a - x < 0 or b - y < 0:
                     continue
+                # print(bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary ))
                 score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
                 if score > max_score:
                     max_score = score
                     max_x, max_y = x, y
-                # Set the threshold
-                if max_score - score > 0.1:
-                    break
             H[(a, b)] = max_score
             backtrace[(a, b)] = ( a - max_x, b - max_y )
 
@@ -138,18 +119,8 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
         # print( "Splitting point: ", a, b )    
     return split_position[::-1]
 
-def main(corpus_x, corpus_y, golden):
-    # get the file name of corpus_x and corpus_y
-    corpus_x_file: str = os.path.basename(corpus_x)
-    if corpus_x_file.find('MT') != -1:
-        output_path = "./results/MT-results/lexical-matching/"
-    elif corpus_x_file.find('QTTY') != -1:
-        output_path = "./results/QTTY-results/lexical-matching/"
-    
-    output_file_name = os.path.splitext(corpus_x_file)[0] + "-output.txt"
-    errors_file_name = os.path.splitext(corpus_x_file)[0] + "-errors.txt"
+def aligner(corpus_x, corpus_y):
     dictionary = util.read_dictionary()
-    goldens = util.read_golden(golden)
     alignments = []
     for src, trg in zip(util.readFile(corpus_x), util.readFile(corpus_y)):
         assert src[1] == trg[1]
@@ -165,6 +136,21 @@ def main(corpus_x, corpus_y, golden):
                 alignments.append( ( src_sentence, trg_sentence ) )
             cur_src = a
             cur_trg = b
+    return alignments
+
+def main(corpus_x, corpus_y, golden):
+    # get the file name of corpus_x and corpus_y
+    corpus_x_file: str = os.path.basename(corpus_x)
+    if corpus_x_file.find('MT') != -1:
+        output_path = "./results/MT-results/lexical-matching/"
+    elif corpus_x_file.find('QTTY') != -1:
+        output_path = "./results/QTTY-results/lexical-matching/"
+    
+    output_file_name = os.path.splitext(corpus_x_file)[0] + "-output.txt"
+    errors_file_name = os.path.splitext(corpus_x_file)[0] + "-errors.txt"
+    dictionary = util.read_dictionary()
+    goldens = util.read_golden(golden)
+    alignments = aligner(corpus_x, corpus_y)
     with open(output_path + output_file_name, "w", encoding="utf8") as f:
         for sent_x, sent_y in alignments:
             f.write(sent_x + "\t" + sent_y + "\n")
