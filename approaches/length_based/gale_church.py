@@ -13,10 +13,6 @@ Fixed some bugs, now the code runs on command line.
 import math, codecs
 from ..utils import util
 
-output_path = "./results/MT-results/length-based/original/"
-output_file_name = "MT1-output.txt"
-errors_file_name = "MT1-errors.txt"
-
 try:
     import scipy.stats
 
@@ -156,6 +152,16 @@ def aligner(corpus_x, corpus_y, mean=1.0, variance=6.8, bc=BEAD_COSTS):
     return alignments
 
 def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
+    output_path = ""
+    if corpusx.find("MT") != -1:
+        output_path = "./results/MT-results/length-based/original/"
+    elif corpusx.find("QTTY") != -1:
+        output_path = "./results/QTTY-results/length-based/original/"
+    import os
+    extract_file_name = os.path.basename(corpusx).split(".")[0]
+    errors_file_name = extract_file_name + "-errors.txt"
+    output_file_name = extract_file_name + "-output.txt"
+
     if mean == "gacha":
         mean = calculateMean(corpusx, corpusy)
         variance = calculateVariance(corpusx, corpusy)
@@ -167,7 +173,7 @@ def main(corpusx, corpusy, golden, mean=1.0, variance=6.8, bc=BEAD_COSTS):
 
     for src, trg in zip(readFile(corpusx), readFile(corpusy)):
         assert src[1] == trg[1]
-        # print(src[1])
+        print(src[1])
         # for sentence_x, sentence_y in align(src[0], trg[0], mean, variance, bc):
         #     print(sentence_x + "\t" + sentence_y)
         # Output to file

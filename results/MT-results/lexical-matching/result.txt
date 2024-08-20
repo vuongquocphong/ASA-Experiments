@@ -1,0 +1,15 @@
+# Maximum bipartite matching
+combine.txt
+Dictionary length:  15276
+Precision:  0.9989331436699858
+Recall:  0.8731737643767485
+F1:  0.9318294907944933
+Alignment:  2812
+
+# Remove corresponding word pairs from source and target sentences
+combine.txt
+Dictionary length:  15276
+Precision:  0.9982200071199715
+Recall:  0.8716195212931303
+F1:  0.9306339196813807
+Alignment:  2809
