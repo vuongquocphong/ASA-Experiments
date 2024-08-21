@@ -61,22 +61,11 @@ def get_vn_content_words(vn_sentence):
     """
     Get content words from a Vietnamese sentence.
     """
-    return [word.lower().replace("-", " ") for word in word_tokenize(remove_notes(vn_sentence)) if word not in marks]
+    return [word for word in word_tokenize(remove_notes(vn_sentence.lower().replace("-", " "))) if word not in marks]
 
 from typing import List
 
-available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15),
-                   (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15),
-                   (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12), (3, 13), (3, 14), (3, 15), ]
-
-# available_pair = [
-#     (1, 1),
-#     (2, 1),
-#     (1, 2),
-#     (0, 1),
-#     (1, 0),
-#     (2, 2),
-# ]
+threshold = 0.05
 
 # Scoring Bead
 def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
@@ -151,27 +140,28 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
     # Calculate
     for a in range( 1, n + 1 ):
         for b in range( 1, m + 1 ):
-            # print( "Calculating: ", a, b )
+
             max_score = 0
-            max_x, max_y = 1, 1
-            for x, y in available_pair:
-                if a - x < 0 or b - y < 0:
-                    continue
-                # print(bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary ))
-                score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
-                if score > max_score:
-                    max_score = score
-                    max_x, max_y = x, y
-                # Set the threshold
-                if max_score - score > 0.1:
-                    break
+            max_x, max_y = 0, 0
+            for x in [1, 2, 3, 4]:
+                if a - x < 0: continue
+                if x - max_x >= 3: continue
+                for y in range( max( max_y - 5, 1 ), 20 ):
+                    if b - y < 0: continue
+                    score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
+                    if score > max_score:
+                        max_score = score
+                        max_x, max_y = x, y
+                    if max_score - score > threshold: break
+
             H[(a, b)] = max_score
-            backtrace[(a, b)] = ( a - max_x, b - max_y )
+            backtrace[(a, b)] = (a - max_x, b - max_y)
 
     # Backtrace
-    split_position = []
     
     a, b = n, m
+    split_position = [(a, b)]
+    
     while a > 0 and b > 0:
         a, b = backtrace[(a, b)]
         split_position.append( (a, b) )
