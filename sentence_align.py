@@ -58,6 +58,8 @@ def main(source, target, method):
     # Write the alignments to a file
     with open("alignments.txt", "w", encoding="utf-8") as f:
         for src, trg in alignments:
+            src = re.sub(r'\s+', '', src)
+            trg = re.sub(r'\s+', ' ', trg)
             f.write(src + "\t" + trg + "\n")
 
     # Remove the tmp folder

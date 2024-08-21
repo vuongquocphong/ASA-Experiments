@@ -2,14 +2,50 @@ from ..utils import util
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 import os
+import re
 from .coressponding_pair import bead_score_new
+
+def remove_notes(sentence):
+    """
+    Remove notes in a sentence (inside parentheses). If open but not close, remove from the open to the end of the sentence.
+    If close but not open, remove from the beginning of the sentence to the close.
+    Also, ensure there are no multiple adjacent spaces.
+    """
+    result = []
+    open_parentheses = 0
+    has_unmatched_close = False
+
+    for char in sentence:
+        if char == '(':
+            if open_parentheses == 0:
+                has_unmatched_close = False  # Reset in case we found unmatched close earlier
+            open_parentheses += 1
+        elif char == ')':
+            open_parentheses -= 1
+            if open_parentheses < 0:
+                has_unmatched_close = True
+                open_parentheses = 0
+                result = []  # Reset the result if we found unmatched close
+                has_unmatched_close = False
+            continue  # Do not add this character to the result if we're closing a parenthesis
+        if open_parentheses == 0 and not has_unmatched_close:
+            result.append(char)
+
+    # If unmatched closing parenthesis was found, return only the part before it
+    cleaned_sentence = ''.join(result)
+
+    # Replace multiple spaces with a single space
+    cleaned_sentence = re.sub(r'\s+', ' ', cleaned_sentence)
+    
+    return cleaned_sentence.strip()
+
 
 def get_ch_content_words(ch_sentence):
     """
     Get content words from a Chinese sentence.
     """
     return [
-        word for word in word_tokenize(ch_sentence)
+        word for word in word_tokenize(remove_notes(ch_sentence))
         if any(
             ord(word) in range(start, end + 1)
             for start, end in [
@@ -25,22 +61,22 @@ def get_vn_content_words(vn_sentence):
     """
     Get content words from a Vietnamese sentence.
     """
-    return [word.lower().replace("-", " ") for word in word_tokenize(vn_sentence) if word not in marks]
+    return [word.lower().replace("-", " ") for word in word_tokenize(remove_notes(vn_sentence)) if word not in marks]
 
 from typing import List
 
-# available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15),
-#                    (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15),
-#                    (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12), (3, 13), (3, 14), (3, 15), ]
+available_pair = [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15),
+                   (2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15),
+                   (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12), (3, 13), (3, 14), (3, 15), ]
 
-available_pair = [
-    (1, 1),
-    (2, 1),
-    (1, 2),
-    (0, 1),
-    (1, 0),
-    (2, 2),
-]
+# available_pair = [
+#     (1, 1),
+#     (2, 1),
+#     (1, 2),
+#     (0, 1),
+#     (1, 0),
+#     (2, 2),
+# ]
 
 # Scoring Bead
 def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
