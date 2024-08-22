@@ -142,11 +142,11 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
         for b in range( 1, m + 1 ):
 
             max_score = 0
-            max_x, max_y = 0, 0
+            max_x, max_y = 1, 1
             for x in [1, 2, 3, 4]:
                 if a - x < 0: continue
                 if x - max_x >= 3: continue
-                for y in range( max( max_y - 5, 1 ), 20 ):
+                for y in range( max( max_y - 5, 1 ), b + 1 ):
                     if b - y < 0: continue
                     score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
                     if score > max_score:
@@ -158,14 +158,13 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
             backtrace[(a, b)] = (a - max_x, b - max_y)
 
     # Backtrace
-    
     a, b = n, m
     split_position = [(a, b)]
     
     while a > 0 and b > 0:
         a, b = backtrace[(a, b)]
         split_position.append( (a, b) )
-        # print( "Splitting point: ", a, b )    
+
     return split_position[::-1]
 
 def aligner(corpus_x, corpus_y):
