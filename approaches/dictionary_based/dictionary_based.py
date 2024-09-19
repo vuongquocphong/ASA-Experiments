@@ -143,7 +143,7 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
 
             max_score = 0
             max_x, max_y = 1, 1
-            for x in [1, 2, 3, 4]:
+            for x in range( 1, a + 1 ):
                 if a - x < 0: continue
                 if x - max_x >= 3: continue
                 for y in range( max( max_y - 5, 1 ), b + 1 ):
