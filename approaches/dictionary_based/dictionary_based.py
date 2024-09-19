@@ -57,10 +57,10 @@ def get_ch_content_words(ch_sentence):
     ]
 
 def get_vn_content_words(vn_sentence):
-    marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'", '“', '”', '‘', '’', '...', '…', '–', '-', '—']
     """
     Get content words from a Vietnamese sentence.
     """
+    marks = [',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '"', "'", '“', '”', '‘', '’', '...', '…', '–', '-', '—']
     return [word for word in word_tokenize(remove_notes(vn_sentence.lower().replace("-", " "))) if word not in marks]
 
 from typing import List
@@ -143,6 +143,8 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
 
             max_score = 0
             max_x, max_y = 1, 1
+
+            # The case when x, y > 0
             for x in range( 1, a + 1 ):
                 if a - x < 0: continue
                 if x - max_x >= 3: continue
@@ -153,7 +155,22 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
                         max_score = score
                         max_x, max_y = x, y
                     if max_score - score > threshold: break
+            
+            # The case when y = 0
+            for x in range( 1, a + 1 ):
+                if a - x < 0: continue
+                if H[(a - x, b)] > max_score:
+                    max_score = H[(a - x, b)]
+                    max_x, max_y = x, 0
 
+            # The case when x = 0
+            for y in range( 1, b + 1 ):
+                if b - y < 0: continue
+                if H[(a, b - y)] > max_score:
+                    max_score = H[(a, b - y)]
+                    max_x, max_y = 0, y
+
+            # Update H and backtrace
             H[(a, b)] = max_score
             backtrace[(a, b)] = (a - max_x, b - max_y)
 
