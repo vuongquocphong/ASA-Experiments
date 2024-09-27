@@ -65,7 +65,9 @@ def get_vn_content_words(vn_sentence):
 
 from typing import List
 
-threshold = 0.05
+threshold = 0.03
+callback_X = 3
+callback_Y = 0
 
 # Scoring Bead
 def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
@@ -147,8 +149,19 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
             # The case when x, y > 0
             for x in range( 1, a + 1 ):
                 if a - x < 0: continue
-                if x - max_x >= 3: continue
-                for y in range( max( max_y - 5, 1 ), b + 1 ):
+                if x - max_x >= callback_X: continue
+
+                preY = max_y
+
+                # For safety purpose
+                for y in range( max( preY - callback_Y, 1 ), preY ):
+                    if b - y < 0: continue
+                    score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
+                    if score > max_score:
+                        max_score = score
+                        max_x, max_y = x, y
+
+                for y in range( preY, b + 1 ):
                     if b - y < 0: continue
                     score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
                     if score > max_score:
@@ -239,7 +252,6 @@ def main(corpus_x, corpus_y, golden):
 
 if __name__ == "__main__":
     import sys
-
     if len(sys.argv) != 4:
         sys.stderr.write("Usage: %srcfile corpus.x corpus.y gold\n")
         sys.exit(1)
