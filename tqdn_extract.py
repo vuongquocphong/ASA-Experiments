@@ -124,16 +124,30 @@ def write_text(file_path, text):
             if item != " " or item != "":
                 f.write(item)
 
-chinese_pars, sinoviet_pars, translation_pars = read_pdf("tqdn1.pdf")
+if __name__ == "__main__":
+    print("Hello")
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage: python tqdn_extract.py <file_path>")
+        sys.exit(1)
+    
+    file_name = sys.argv[1]
+    print(file_name)
+    chinese_pars, sinoviet_pars, translation_pars = read_pdf(file_name)
 
-with open('chinese_pars.txt', 'w', encoding='utf-8') as f:
-    for item in chinese_pars:
-        f.write("%s\n" % item)
+    dir_name = file_name.split('.')[0]
+    # Create directories if not exist
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
 
-with open('sinoviet_pars.txt', 'w', encoding='utf-8') as f:
-    for item in sinoviet_pars:
-        f.write("%s\n" % item)
+    with open('./' + dir_name + '/' + 'chinese_pars.txt', 'w', encoding='utf-8') as f:
+        for item in chinese_pars:
+            f.write("%s\n" % item)
 
-with open('translation_pars.txt', 'w', encoding='utf-8') as f:
-    for item in translation_pars:
-        f.write("%s\n" % item)
+    with open('./' + dir_name + '/' + 'sinoviet_pars.txt', 'w', encoding='utf-8') as f:
+        for item in sinoviet_pars:
+            f.write("%s\n" % item)
+
+    with open('./' + dir_name + '/' + 'translation_pars.txt', 'w', encoding='utf-8') as f:
+        for item in translation_pars:
+            f.write("%s\n" % item)
