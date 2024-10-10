@@ -69,49 +69,6 @@ threshold = 0.03
 callback_X = 3
 callback_Y = 0
 
-# Scoring Bead
-def bead_score_no_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
-    source_words = set()
-    target_words = set()
-    for i in range(a - x + 1, a + 1):
-        source_words.update( Chinese_sentences[i] )
-    for i in range(b - y + 1, b + 1):
-        target_words.update( Vietnamese_sentences[i] )
-    len_x = len( source_words )
-    len_y = len( target_words )
-    score = 0
-    for source_word in source_words:
-        definitions: List[str] = dictionary.get( source_word, None )
-        if definitions is None:
-            continue
-        for definition in definitions:
-            for target_word in target_words:
-                if definition.find( target_word ) != -1:
-                    score += 1
-    return score / ( len_x + len_y )
-
-def bead_score_remove( Chinese_sentences: List[any], Vietnamese_sentences: List[any], a: int, b: int, x: int, y: int, dictionary: dict ) -> float:
-    source_words = set()
-    target_words = set()
-    for i in range(a - x + 1, a + 1):
-        source_words.update( Chinese_sentences[i] )
-    for i in range(b - y + 1, b + 1):
-        target_words.update( Vietnamese_sentences[i] )
-    len_x = len( source_words )
-    len_y = len( target_words )
-    score = 0
-    target_removed = set()
-    for source_word in source_words:
-        definitions: List[str] = dictionary.get( source_word, None )
-        if definitions is None:
-            continue
-        for definition in definitions:
-            for target_word in target_words - target_removed:
-                if definition.find( target_word ) != -1:
-                    score += 1
-                    target_removed.add( target_word )
-    return score / ( len_x + len_y )
-
 # DP function
 def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictionary) -> List[any]:
     n = len( Chinese_sentences )
