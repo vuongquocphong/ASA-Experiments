@@ -147,7 +147,7 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
             # The case when x, y > 0
             for x in range( 1, a + 1 ):
                 if a - x < 0: continue
-                if x - max_x >= 3: continue
+                # if x - max_x >= 3: continue
                 for y in range( max( max_y - 5, 1 ), b + 1 ):
                     if b - y < 0: continue
                     score = H[(a - x, b - y)] + bead_score_new( Chinese_sentences, Vietnamese_sentences, a, b, x, y, dictionary )
@@ -184,8 +184,7 @@ def BSA( Chinese_sentences: List[any], Vietnamese_sentences: List[any], dictiona
 
     return split_position[::-1]
 
-def aligner(corpus_x, corpus_y):
-    dictionary = util.read_dictionary()
+def aligner(corpus_x, corpus_y, dictionary):
     alignments = []
     for src, trg in zip(util.readFile(corpus_x), util.readFile(corpus_y)):
         assert src[1] == trg[1]
@@ -222,7 +221,7 @@ def main(corpus_x, corpus_y, golden):
             f.write(','.join(dictionary[key]))
             f.write('\n')
     goldens = util.read_golden(golden)
-    alignments = aligner(corpus_x, corpus_y)
+    alignments = aligner(corpus_x, corpus_y, dictionary)
     with open(output_path + output_file_name, "w", encoding="utf8") as f:
         for sent_x, sent_y in alignments:
             f.write(sent_x + "\t" + sent_y + "\n")

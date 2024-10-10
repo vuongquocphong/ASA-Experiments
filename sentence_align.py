@@ -4,6 +4,7 @@ from approaches.dictionary_based.dictionary_based import aligner as dictionary_b
 from approaches.length_based.gale_church import aligner as length_based_aligner
 from approaches.ch_preprocessor.chinese_sentence_segment import split_ch_sentences
 from approaches.vn_preprocessor.preprocessor import Preprocessor, Language
+from approaches.utils.util import read_dictionary
 
 # =====================================================================================
 
@@ -40,16 +41,18 @@ def main(source, target, method):
     target_txt = open("./tmp/target.txt", "r", encoding="utf-8").readlines()
     target_processed = ["# Start\n"]
     target_processed.extend(target_txt+["\n"])
-    target_processed.append("# End")
+    target_processed.append("\n# End")
 
     # Store the preprocessed target file
     with open("./tmp/target.txt", "w", encoding="utf-8") as f:
         for line in target_processed:
-            f.write(line)
+            if line.strip() != "":
+                f.write(line)
     alignments = None
     # Run the alignment method
     if method == "dictionary_based":
-        alignments = dictionary_based_aligner("./tmp/source.txt", "./tmp/target.txt")
+        dictionary = read_dictionary()
+        alignments = dictionary_based_aligner("./tmp/source.txt", "./tmp/target.txt", dictionary)
     elif method == "length_based":
         alignments = length_based_aligner("./tmp/source.txt", "./tmp/target.txt")
     else:
