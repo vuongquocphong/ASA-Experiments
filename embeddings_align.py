@@ -19,7 +19,7 @@ def align(book_name, dictionary, type):
         lines = f.readlines()
         for line in lines:
             translation_pars.append(line)
-    import approaches.dictionary_based.dictionary_based as db
+    import approaches.embeddings.main as em
     import os
     # Create tmpp_tqdn to store the preprocessed files
     tmp_dir = f"./tmp_tqdn/{book_name}"
@@ -64,7 +64,7 @@ def align(book_name, dictionary, type):
             for line in target_processed:
                 if line.strip() != "":
                     f.write(line)
-        alignments = db.aligner("./tmp/source.txt", "./tmp/target.txt", dictionary)
+        alignments = em.aligner("./tmp/source.txt", "./tmp/target.txt", dictionary)
         save_file_name = ""
         if type == "ch_sino":
             save_file_name = "alignments_ch_sino.txt"
@@ -82,7 +82,6 @@ def align(book_name, dictionary, type):
 
 if __name__ == "__main__":
     dictionary = read_dictionary()
-    books = ["tqdn1", "tqdn2", "tqdn3"]
+    books = ["dvsk"]
     for book in books:
-        align(book, dictionary, "ch_sino")
         align(book, dictionary, "ch_vn")

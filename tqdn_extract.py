@@ -125,14 +125,12 @@ def write_text(file_path, text):
                 f.write(item)
 
 if __name__ == "__main__":
-    print("Hello")
     import sys
     if len(sys.argv) != 2:
         print("Usage: python tqdn_extract.py <file_path>")
         sys.exit(1)
     
     file_name = sys.argv[1]
-    print(file_name)
     chinese_pars, sinoviet_pars, translation_pars = read_pdf(file_name)
 
     dir_name = file_name.split('.')[0]
