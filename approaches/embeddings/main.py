@@ -25,7 +25,7 @@ def embeddings_score(ch_sentences, vn_sentences, a, b, x, y, dictionary):
     trg_embedding = laser.embed_sentences(trg_segment, lang="vi")
 
     # Calculate cosine similarity (1 - cosine distance)
-    similarity = 1 - cosine(src_embedding, trg_embedding)
+    similarity = 1 - cosine(src_embedding.ravel(), trg_embedding.ravel())
 
     # Define a weight for combining similarity score with original scoring if needed
     weight = 0.5  # Adjust weight as necessary to balance existing and similarity-based scores
@@ -154,7 +154,6 @@ def BSA(
 ) -> List[any]:
     n = len(Chinese_sentences)
     m = len(Vietnamese_sentences)
-
 
     # Initialization
     H = dict()
