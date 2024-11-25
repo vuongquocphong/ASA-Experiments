@@ -1,12 +1,15 @@
-from approaches.ch_preprocessor.chinese_sentence_segment import split_ch_sentences
+from approaches.ch_preprocessor.chinese_sentence_segment import split_ch_sentences_keep_space
 from approaches.vn_preprocessor.preprocessor import Preprocessor, Language
 from approaches.utils.util import read_dictionary
 import re
 
-def align(book_name, dictionary, type):
+def align(book_name, type):
+    ch_golden = []
+    vn_golden = []
     chinese_pars = []
     sinoviet_pars = []
     translation_pars = []
+    to_ret = []
     with open(f"./{book_name}/chinese_pars.txt", "r", encoding="utf-8") as f:
         lines = f.readlines()
         for line in lines:
@@ -19,15 +22,20 @@ def align(book_name, dictionary, type):
         lines = f.readlines()
         for line in lines:
             translation_pars.append(line)
+    with open(f"./{book_name}/ch_golden.txt", "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        for line in lines:
+            ch_golden.append(line)
+    with open(f"./{book_name}/vn_golden.txt", "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        for line in lines:
+            vn_golden.append(line)
     import approaches.embeddings.main as em
     import os
-    # Create tmpp_tqdn to store the preprocessed files
-    tmp_dir = f"./tmp_tqdn/{book_name}"
-    processed_dir = f"./tmp_tqdn/{book_name}/processed"
+    # Create tmp_pre to store the preprocessed files
+    tmp_dir = f"./tmp_pre/{book_name}"
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
-    if not os.path.exists(processed_dir):
-        os.makedirs(processed_dir)
     idx = 0
     if type == "ch_sino":
         src_pars = chinese_pars
@@ -41,7 +49,7 @@ def align(book_name, dictionary, type):
         with open(f"{tmp_dir}/target_tmp.txt", "w", encoding="utf-8") as f:
             f.write(trg_par)
         source_txt = open(f"{tmp_dir}/source_tmp.txt", "r", encoding="utf-8").readlines()
-        source_splitted = split_ch_sentences(source_txt)
+        source_splitted = split_ch_sentences_keep_space(source_txt)
         # Insert "# Start" and "# End" to the beginning and the end of the source file
         source_processed = ["# Start\n"]
         source_processed.extend(source_splitted+["\n"])
@@ -64,7 +72,9 @@ def align(book_name, dictionary, type):
             for line in target_processed:
                 if line.strip() != "":
                     f.write(line)
-        alignments = em.aligner("./tmp/source.txt", "./tmp/target.txt", dictionary)
+        alignments = em.aligner("./tmp/source.txt", "./tmp/target.txt")
+        for a, b in alignments:
+            to_ret.append((a, b))
         save_file_name = ""
         if type == "ch_sino":
             save_file_name = "alignments_ch_sino.txt"
@@ -79,9 +89,31 @@ def align(book_name, dictionary, type):
                 f.write(src + "\t" + trg + "\n")
             f.write("\n")
         idx += 1
+    return to_ret
 
 if __name__ == "__main__":
-    dictionary = read_dictionary()
     books = ["dvsk"]
     for book in books:
-        align(book, dictionary, "ch_vn")
+        full_alignments = align(book, "ch_vn")
+        # Print 10 first alignments
+        ch_golden = []
+        vn_golden = []
+        with open(f"./{book}/ch_golden.txt", "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            for line in lines:
+                ch_golden.append(line)
+        with open(f"./{book}/vn_golden.txt", "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            for line in lines:
+                vn_golden.append(line)
+        import approaches.utils.util as util
+        golden = []
+        for i in range(len(ch_golden)):
+            golden.append((ch_golden[i], vn_golden[i]))
+        for i in range(len(full_alignments)):
+            full_alignments[i] = (full_alignments[i][0] + "\n", full_alignments[i][1] + "\n")
+        precision = util.precision(full_alignments, golden)
+        recall = util.recall(full_alignments, golden)
+        f1 = util.f_one(full_alignments, golden)
+        print(f"Precision: {precision}, Recall: {recall}, F1: {f1}")
+        print(f"Alignments: {len(full_alignments)}")
