@@ -97,7 +97,7 @@ def align(sx, sy, mean_xy, variance_xy, bc):
     cx = list(map(sent_length, sx))
     cy = list(map(sent_length, sy))
     for (i1, i2), (j1, j2) in reversed(list(_align(cx, cy, mean_xy, variance_xy, bc))):
-        yield " ".join(sx[i1:i2]), " ".join(sy[j1:j2])
+        yield "".join(sx[i1:i2]), " ".join(sy[j1:j2])
 
 
 def readFile(filename):

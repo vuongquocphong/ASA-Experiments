@@ -8,8 +8,6 @@ from approaches.utils.util import read_dictionary
 
 # =====================================================================================
 
-import nltk
-
 def main(source, target, method):
     # Create tmp folder to store the preprocessed files
     if not os.path.exists("./tmp"):
@@ -59,7 +57,7 @@ def main(source, target, method):
         raise ValueError("Invalid method name. Please choose 'dictionary_based' or 'length_based'.")
 
     # Write the alignments to a file
-    with open("alignments.txt", "w", encoding="utf-8") as f:
+    with open(f"{method}_alignments.txt", "w", encoding="utf-8") as f:
         for src, trg in alignments:
             src = re.sub(r'\s+', '', src)
             trg = re.sub(r'\s+', ' ', trg)

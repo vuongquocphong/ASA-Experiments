@@ -2,3 +2,5 @@
 /CLC
 *.zip
 /__pycache__
+/py3.9
+/.venv

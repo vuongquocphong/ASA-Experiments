@@ -171,7 +171,7 @@ def aligner(corpus_x, corpus_y, dictionary):
         cur_src = 0
         cur_trg = 0
         for a, b in split_position:
-            src_sentence = " ".join( src[0][cur_src:a] )
+            src_sentence = "".join( src[0][cur_src:a] )
             trg_sentence = " ".join( trg[0][cur_trg:b] )
             # print(src_sentence, trg_sentence)
             if src_sentence != "" and trg_sentence != "":

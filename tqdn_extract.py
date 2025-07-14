@@ -27,6 +27,9 @@ def sinoviet_count(text):
             count += 1
     return count
 
+def read_pdf_new(file_path):
+    pdf = fitz.open(file_path)
+    print(pdf[3].get_text("text"))
 
 def read_pdf(file_path):
     pdf = fitz.open(file_path)
@@ -131,21 +134,22 @@ if __name__ == "__main__":
         sys.exit(1)
     
     file_name = sys.argv[1]
-    chinese_pars, sinoviet_pars, translation_pars = read_pdf(file_name)
+    read_pdf_new(file_name)
+    # chinese_pars, sinoviet_pars, translation_pars = read_pdf(file_name)
 
-    dir_name = file_name.split('.')[0]
-    # Create directories if not exist
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
+    # dir_name = file_name.split('.')[0]
+    # # Create directories if not exist
+    # if not os.path.exists(dir_name):
+    #     os.makedirs(dir_name)
 
-    with open('./' + dir_name + '/' + 'chinese_pars.txt', 'w', encoding='utf-8') as f:
-        for item in chinese_pars:
-            f.write("%s\n" % item)
+    # with open('./' + dir_name + '/' + 'chinese_pars.txt', 'w', encoding='utf-8') as f:
+    #     for item in chinese_pars:
+    #         f.write("%s\n" % item)
 
-    with open('./' + dir_name + '/' + 'sinoviet_pars.txt', 'w', encoding='utf-8') as f:
-        for item in sinoviet_pars:
-            f.write("%s\n" % item)
+    # with open('./' + dir_name + '/' + 'sinoviet_pars.txt', 'w', encoding='utf-8') as f:
+    #     for item in sinoviet_pars:
+    #         f.write("%s\n" % item)
 
-    with open('./' + dir_name + '/' + 'translation_pars.txt', 'w', encoding='utf-8') as f:
-        for item in translation_pars:
-            f.write("%s\n" % item)
+    # with open('./' + dir_name + '/' + 'translation_pars.txt', 'w', encoding='utf-8') as f:
+    #     for item in translation_pars:
+    #         f.write("%s\n" % item)

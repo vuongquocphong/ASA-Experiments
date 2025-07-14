@@ -1,7 +1,9 @@
-from approaches.ch_preprocessor.chinese_sentence_segment import split_ch_sentences_keep_space
+from approaches.ch_preprocessor.chinese_sentence_segment import (
+    split_ch_sentences_keep_space,
+)
 from approaches.vn_preprocessor.preprocessor import Preprocessor, Language
-from approaches.utils.util import read_dictionary
 import re
+
 
 def align(book_name, type):
     ch_golden = []
@@ -32,6 +34,7 @@ def align(book_name, type):
             vn_golden.append(line)
     import approaches.embeddings.main as em
     import os
+
     # Create tmp_pre to store the preprocessed files
     tmp_dir = f"./tmp_pre/{book_name}"
     if not os.path.exists(tmp_dir):
@@ -48,11 +51,13 @@ def align(book_name, type):
             f.write(src_par)
         with open(f"{tmp_dir}/target_tmp.txt", "w", encoding="utf-8") as f:
             f.write(trg_par)
-        source_txt = open(f"{tmp_dir}/source_tmp.txt", "r", encoding="utf-8").readlines()
+        source_txt = open(
+            f"{tmp_dir}/source_tmp.txt", "r", encoding="utf-8"
+        ).readlines()
         source_splitted = split_ch_sentences_keep_space(source_txt)
         # Insert "# Start" and "# End" to the beginning and the end of the source file
         source_processed = ["# Start\n"]
-        source_processed.extend(source_splitted+["\n"])
+        source_processed.extend(source_splitted + ["\n"])
         source_processed.append("# End")
         with open("./tmp/source.txt", "w", encoding="utf-8") as f:
             for line in source_processed:
@@ -61,11 +66,13 @@ def align(book_name, type):
                     f.write(line + "\n")
         # Preprocess the target file
         p = Preprocessor(Language.vietnamese)
-        p.segment_files_to_sentences(f"{tmp_dir}/target_tmp.txt", "./tmp/target.txt", {'overwrite': True})
+        p.segment_files_to_sentences(
+            f"{tmp_dir}/target_tmp.txt", "./tmp/target.txt", {"overwrite": True}
+        )
         # Insert "# Start" and "# End" to the beginning and the end of the target file
         target_txt = open("./tmp/target.txt", "r", encoding="utf-8").readlines()
         target_processed = ["# Start\n"]
-        target_processed.extend(target_txt+["\n"])
+        target_processed.extend(target_txt + ["\n"])
         target_processed.append("\n# End")
         # Store the preprocessed target file
         with open("./tmp/target.txt", "w", encoding="utf-8") as f:
@@ -84,12 +91,13 @@ def align(book_name, type):
             f.write(f"Paragraph {idx}\n")
             print(f"Paragraph {idx}")
             for src, trg in alignments:
-                src = re.sub(r'\s+', '', src)
-                trg = re.sub(r'\s+', ' ', trg)
+                src = re.sub(r"\s+", "", src)
+                trg = re.sub(r"\s+", " ", trg)
                 f.write(src + "\t" + trg + "\n")
             f.write("\n")
         idx += 1
     return to_ret
+
 
 if __name__ == "__main__":
     books = ["dvsk"]
@@ -107,11 +115,15 @@ if __name__ == "__main__":
             for line in lines:
                 vn_golden.append(line)
         import approaches.utils.util as util
+
         golden = []
         for i in range(len(ch_golden)):
             golden.append((ch_golden[i], vn_golden[i]))
         for i in range(len(full_alignments)):
-            full_alignments[i] = (full_alignments[i][0] + "\n", full_alignments[i][1] + "\n")
+            full_alignments[i] = (
+                full_alignments[i][0] + "\n",
+                full_alignments[i][1] + "\n",
+            )
         precision = util.precision(full_alignments, golden)
         recall = util.recall(full_alignments, golden)
         f1 = util.f_one(full_alignments, golden)

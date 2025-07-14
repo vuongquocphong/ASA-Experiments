@@ -1,0 +1,10 @@
+Align with trans source snts using length baseline
+Precision: 0.6729559748427673
+Recall: 0.7133333333333334
+F1: 0.6925566343042071
+------------------
+Align with trans source snts using bertalign baseline
+Precision: 0.824212271973466
+Recall: 0.8283333333333334
+F1: 0.8262676641729011
+------------------
